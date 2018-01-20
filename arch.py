@@ -151,10 +151,12 @@ def make_box(xmin: float, xmax: float,
 
 def make_arch_y(xmin: float, xmax: float,
                 ymin: float, ymax: float,
-                zmin: float, zmax: float, name: str='arch') -> None:
-    make_plane_y_pos(name=name, zmin=zmin, zmax=zmax, xmin=xmin, xmax=xmax, y=ymax)
-    make_plane_y_neg(name=name, zmin=zmin, zmax=zmax, xmin=xmin, xmax=xmax, y=ymin)
-    make_plane_z_pos(name=name, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, z=zmax)
+                zmin: float, zmax: float,
+                transformation: Transformation3 = identity,
+                name: str='arch') -> None:
+    make_plane_y_pos(name=name, zmin=zmin, zmax=zmax, xmin=xmin, xmax=xmax, y=ymax, transformation=transformation)
+    make_plane_y_neg(name=name, zmin=zmin, zmax=zmax, xmin=xmin, xmax=xmax, y=ymin, transformation=transformation)
+    make_plane_z_pos(name=name, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, z=zmax, transformation=transformation)
     
     STEPS = 32
     angles = [math.pi * i / 2 / (STEPS - 1) for i in range(STEPS)]
@@ -202,40 +204,49 @@ def make_arch_y(xmin: float, xmax: float,
     for step in range(STEPS - 1):
         make_triangle(a=vertices_front_left[step],
                       c=vertices_back_left[step],
-                      b=vertices_front_left[step + 1])
+                      b=vertices_front_left[step + 1],
+                      transformation=transformation)
 
         make_triangle(a=vertices_back_left[step],
                       c=vertices_back_left[step + 1],
-                      b=vertices_front_left[step + 1])
+                      b=vertices_front_left[step + 1],
+                      transformation=transformation)
 
         make_triangle(a=vertices_front_right[step],
                       b=vertices_back_right[step],
-                      c=vertices_front_right[step + 1])
+                      c=vertices_front_right[step + 1],
+                      transformation=transformation)
 
         make_triangle(a=vertices_back_right[step],
                       b=vertices_back_right[step + 1],
-                      c=vertices_front_right[step + 1])
+                      c=vertices_front_right[step + 1],
+                      transformation=transformation)
 
         make_triangle(a=vertices_back_left[-1],
                       b=vertices_back_left[step],
-                      c=vertices_back_left[step + 1])
+                      c=vertices_back_left[step + 1],
+                      transformation=transformation)
 
         make_triangle(a=vertices_front_left[-1],
                       c=vertices_front_left[step],
-                      b=vertices_front_left[step + 1])
+                      b=vertices_front_left[step + 1],
+                      transformation=transformation)
 
         make_triangle(a=vertices_back_right[-1],
                       c=vertices_back_right[step],
-                      b=vertices_back_right[step + 1])
+                      b=vertices_back_right[step + 1],
+                      transformation=transformation)
 
         make_triangle(a=vertices_front_right[-1],
                       b=vertices_front_right[step],
-                      c=vertices_front_right[step + 1])
+                      c=vertices_front_right[step + 1],
+                      transformation=transformation)
 
 
 def make_arches_y(num_arches: int, radius: float, height_bottom: float,
                   height_top: float, width_pillar: float,
-                  xmin: float, xmax: float, zmin: float) -> None:
+                  xmin: float, xmax: float, zmin: float,
+                  transformation: Transformation3 = identity) -> None:
     diameter = 2 * radius
     height = height_bottom + radius + height_top
     width_segment = diameter + width_pillar
@@ -258,7 +269,8 @@ def make_arches_y(num_arches: int, radius: float, height_bottom: float,
         make_arch_y(
             xmin=xmin, xmax=xmax,
             ymin=width_pillar + y, ymax=width_segment + y,
-            zmin=zmin + height_bottom, zmax=zmin + height_bottom + radius)
+            zmin=zmin + height_bottom, zmax=zmin + height_bottom + radius,
+            transformation=transformation)
 
 
 def main() -> None:
