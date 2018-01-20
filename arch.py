@@ -1,6 +1,7 @@
 import bpy
 import math
 import sys
+from typing import Callable, Sequence, Tuple
 
 
 def clear_scene():
@@ -9,27 +10,34 @@ def clear_scene():
         objects.unlink(object)
 
 
-def make_mesh(name, vertices, faces):
+def make_mesh(vertices, faces, name: str) -> None:
     mesh_data = bpy.data.meshes.new('')
     mesh_data.from_pydata(vertices, [], faces)
     mesh_data.update()
     return mesh_data
 
 
-def make_object(name, mesh):
+def make_object(mesh, name: str) -> None:
     obj = bpy.data.objects.new('', mesh)
     bpy.context.scene.objects.link(obj)
 
 
-def make_box(xmin, xmax, ymin, ymax, zmin, zmax, name='box'):
-    make_plane_x_pos(name=name, zmin=zmin, zmax=zmax, ymin=ymin, ymax=ymax, x=xmax)
-    make_plane_x_neg(name=name, zmin=zmin, zmax=zmax, ymin=ymin, ymax=ymax, x=xmin)
+def make_triangle(a: Vector3, b: Vector3, c: Vector3, name: str) -> None:
+    vertices = [a, b, c]
+    faces = [(0,1,2)]
+    mesh_name = '{}_mesh'.format(name)
+    mesh = make_mesh(name=mesh_name, vertices=vertices, faces=faces)
+    make_object(name=name, mesh=mesh)
 
-    make_plane_y_pos(name=name, zmin=zmin, zmax=zmax, xmin=xmin, xmax=xmax, y=ymax)
-    make_plane_y_neg(name=name, zmin=zmin, zmax=zmax, xmin=xmin, xmax=xmax, y=ymin)
 
-    make_plane_z_pos(name=name, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, z=zmax)
-    make_plane_z_neg(name=name, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, z=zmin)
+def make_rectangle(upper_left: Vector3, upper_right: Vector3,
+                   lower_left: Vector3, lower_right: Vector3, name: str) -> None:
+    vertices = [upper_left, upper_right,
+                lower_left, lower_right]
+    faces = [(0,2,3,1)]
+    mesh_name = '{}_mesh'.format(name)
+    mesh = make_mesh(name=mesh_name, vertices=vertices, faces=faces)
+    make_object(name=name, mesh=mesh)
 
 
 def make_plane_x_pos(name, zmin, zmax, ymin, ymax, x):
@@ -62,24 +70,22 @@ def make_plane_z_neg(name, xmin, xmax, ymin, ymax, z):
                    lower_right=(xmin, ymin, z), lower_left=(xmax, ymin, z), name=name)
 
 
-def make_rectangle(name, upper_left, upper_right, lower_left, lower_right):
-    vertices = [upper_left, upper_right,
-                lower_left, lower_right]
-    faces = [(0,2,3,1)]
-    mesh_name = '{}_mesh'.format(name)
-    mesh = make_mesh(name=mesh_name, vertices=vertices, faces=faces)
-    make_object(name, mesh)
+def make_box(xmin: float, xmax: float,
+             ymin: float, ymax: float,
+             zmin: float, zmax: float, name: str='box') -> None:
+    make_plane_x_pos(name=name, zmin=zmin, zmax=zmax, ymin=ymin, ymax=ymax, x=xmax)
+    make_plane_x_neg(name=name, zmin=zmin, zmax=zmax, ymin=ymin, ymax=ymax, x=xmin)
+
+    make_plane_y_pos(name=name, zmin=zmin, zmax=zmax, xmin=xmin, xmax=xmax, y=ymax)
+    make_plane_y_neg(name=name, zmin=zmin, zmax=zmax, xmin=xmin, xmax=xmax, y=ymin)
+
+    make_plane_z_pos(name=name, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, z=zmax)
+    make_plane_z_neg(name=name, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, z=zmin)
 
 
-def make_triangle(name, a, b, c):
-    vertices = [a, b, c]
-    faces = [(0,1,2)]
-    mesh_name = '{}_mesh'.format(name)
-    mesh = make_mesh(name=mesh_name, vertices=vertices, faces=faces)
-    make_object(name, mesh)
-
-
-def make_arch_y(xmin, xmax, ymin, ymax, zmin, zmax, name='arch'):
+def make_arch_y(xmin: float, xmax: float,
+                ymin: float, ymax: float,
+                zmin: float, zmax: float, name: str='arch') -> None:
     make_plane_y_pos(name=name, zmin=zmin, zmax=zmax, xmin=xmin, xmax=xmax, y=ymax)
     make_plane_y_neg(name=name, zmin=zmin, zmax=zmax, xmin=xmin, xmax=xmax, y=ymin)
     make_plane_z_pos(name=name, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, z=zmax)
@@ -120,8 +126,9 @@ def make_arch_y(xmin, xmax, ymin, ymax, zmin, zmax, name='arch'):
         make_triangle(name=name, a=(xmax,ymin,zmax), b=(xmax,y0r,z0), c=(xmax,y1r,z1))
 
 
-def make_arches_y(num_arches, radius, height_bottom, height_top, width_pillar,
-        xmin, xmax, zmin):
+def make_arches_y(num_arches: int, radius: float, height_bottom: float,
+                  height_top: float, width_pillar: float,
+                  xmin: float, xmax: float, zmin: float) -> None:
     diameter = 2 * radius
     height = height_bottom + radius + height_top
     width_segment = diameter + width_pillar
@@ -147,7 +154,7 @@ def make_arches_y(num_arches, radius, height_bottom, height_top, width_pillar,
             zmin=zmin + height_bottom, zmax=zmin + height_bottom + radius)
 
 
-def main():
+def main() -> None:
     clear_scene()
     make_arches_y(num_arches=1, radius=1, height_bottom=3, height_top=1,
         width_pillar=1, xmin=0, xmax=1, zmin=0)
