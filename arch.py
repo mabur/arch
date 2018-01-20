@@ -1,6 +1,7 @@
 import bpy
 import math
 import sys
+from enum import IntEnum
 from typing import Callable, Sequence, Tuple
 
 Vector3 = Tuple[float, float, float]
@@ -48,6 +49,14 @@ def make_object(mesh, name: str) -> None:
     bpy.context.scene.objects.link(obj)
 
 
+def make_mesh_object(vertices: Sequence[Vector3], faces: Sequence[Tuple]) -> None:
+    mesh = bpy.data.meshes.new('')
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new('', mesh)
+    bpy.context.scene.objects.link(obj)
+
+
 def make_triangle(a: Vector3,
                   b: Vector3,
                   c: Vector3,
@@ -55,10 +64,7 @@ def make_triangle(a: Vector3,
                   name: str='triangle') -> None:
     vertices = [transformation(a), transformation(b), transformation(c)]
     faces = [(0, 1, 2)]
-    name_mesh = '{}_mesh'.format(name)
-    name_object = '{}_object'.format(name)
-    mesh = make_mesh(name=name_mesh, vertices=vertices, faces=faces)
-    make_object(name=name_object, mesh=mesh)
+    make_mesh_object(vertices=vertices, faces=faces)
 
 
 def make_rectangle(upper_left: Vector3,
@@ -69,12 +75,8 @@ def make_rectangle(upper_left: Vector3,
                    name: str='rectangle') -> None:
     vertices = [transformation(upper_left), transformation(upper_right),
                 transformation(lower_left), transformation(lower_right)]
-    #faces = [(0, 2, 3, 1)]
     faces = [(0, 2, 3), (0, 3, 1)]
-    name_mesh = '{}_mesh'.format(name)
-    name_object = '{}_object'.format(name)
-    mesh = make_mesh(name=name_mesh, vertices=vertices, faces=faces)
-    make_object(name=name_object, mesh=mesh)
+    make_mesh_object(vertices=vertices, faces=faces)
 
 
 def make_plane_x_pos(name, zmin, zmax, ymin, ymax, x, transformation: Transformation3=identity):
@@ -160,7 +162,7 @@ def make_arch_y(xmin: float, xmax: float,
     cy = (ymax + ymin) / 2    
     ry = (ymax - ymin) / 2
     rz = zmax - zmin
-    
+
     def get_y_left(angle):
         return cy + ry * math.cos(angle)
     
@@ -169,25 +171,66 @@ def make_arch_y(xmin: float, xmax: float,
     
     def get_z(angle):
         return zmin + rz * math.sin(angle)
-    
+
+    def get_front_left(angle):
+        return (xmax, get_y_left(angle), get_z(angle))
+
+    def get_front_right(angle):
+        return (xmax, get_y_right(angle), get_z(angle))
+
+    def get_back_left(angle):
+        return (xmin, get_y_left(angle), get_z(angle))
+
+    def get_back_right(angle):
+        return (xmin, get_y_right(angle), get_z(angle))
+
+    vertices_front_left = [get_front_left(angle) for angle in angles]
+    vertices_front_right = [get_front_right(angle) for angle in angles]
+    vertices_back_left = [get_back_left(angle) for angle in angles]
+    vertices_back_right = [get_back_right(angle) for angle in angles]
+
+    corner_back_left = (xmin, ymax, zmax)
+    corner_front_left = (xmax, ymax, zmax)
+    corner_back_right = (xmin, ymin, zmax)
+    corner_front_right = (xmax, ymin, zmax)
+
+    vertices_back_left.append(corner_back_left)
+    vertices_back_right.append(corner_back_right)
+    vertices_front_left.append(corner_front_left)
+    vertices_front_right.append(corner_front_right)
+
     for step in range(STEPS - 1):
-        a0 = angles[step]
-        a1 = angles[step + 1]
-        y0l = get_y_left(a0)
-        y1l = get_y_left(a1)
-        y0r = get_y_right(a0)
-        y1r = get_y_right(a1)
-        z0 = get_z(a0)
-        z1 = get_z(a1)
-        make_rectangle(upper_left=(xmin, y0l, z0), upper_right=(xmin, y1l, z1),
-                       lower_left=(xmax, y0l, z0), lower_right=(xmax, y1l, z1), name=name)
-        make_rectangle(upper_right=(xmin, y0r, z0), upper_left=(xmin, y1r, z1),
-                       lower_right=(xmax, y0r, z0), lower_left=(xmax, y1r, z1), name=name)
-        make_triangle(name=name, a=(xmin,ymax,zmax), b=(xmin,y0l,z0), c=(xmin,y1l,z1))
-        make_triangle(name=name, a=(xmax,ymax,zmax), c=(xmax,y0l,z0), b=(xmax,y1l,z1))
-        
-        make_triangle(name=name, a=(xmin,ymin,zmax), c=(xmin,y0r,z0), b=(xmin,y1r,z1))
-        make_triangle(name=name, a=(xmax,ymin,zmax), b=(xmax,y0r,z0), c=(xmax,y1r,z1))
+        make_triangle(a=vertices_front_left[step],
+                      c=vertices_back_left[step],
+                      b=vertices_front_left[step + 1])
+
+        make_triangle(a=vertices_back_left[step],
+                      c=vertices_back_left[step + 1],
+                      b=vertices_front_left[step + 1])
+
+        make_triangle(a=vertices_front_right[step],
+                      b=vertices_back_right[step],
+                      c=vertices_front_right[step + 1])
+
+        make_triangle(a=vertices_back_right[step],
+                      b=vertices_back_right[step + 1],
+                      c=vertices_front_right[step + 1])
+
+        make_triangle(a=vertices_back_left[-1],
+                      b=vertices_back_left[step],
+                      c=vertices_back_left[step + 1])
+
+        make_triangle(a=vertices_front_left[-1],
+                      c=vertices_front_left[step],
+                      b=vertices_front_left[step + 1])
+
+        make_triangle(a=vertices_back_right[-1],
+                      c=vertices_back_right[step],
+                      b=vertices_back_right[step + 1])
+
+        make_triangle(a=vertices_front_right[-1],
+                      b=vertices_front_right[step],
+                      c=vertices_front_right[step + 1])
 
 
 def make_arches_y(num_arches: int, radius: float, height_bottom: float,
