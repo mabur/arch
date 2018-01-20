@@ -1,8 +1,7 @@
 import bpy
 import math
-import sys
-from enum import IntEnum
-from typing import Callable, Optional, Sequence, Tuple
+from typing import Optional, Sequence, Tuple
+
 
 Vector3 = Tuple[float, float, float]
 
