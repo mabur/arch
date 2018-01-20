@@ -3,14 +3,40 @@ import math
 import sys
 from typing import Callable, Sequence, Tuple
 
+Vector3 = Tuple[float, float, float]
+Transformation3 = Callable[[Vector3], Vector3]
 
-def clear_scene():
+
+def identity(v: Vector3) -> Vector3:
+    return v
+    #return swap_xy(v)
+
+# TODO: Do I want to support mirroring?
+# If so, then could add a parity flag.
+
+def swap_xy(v: Vector3) -> Vector3:
+    return (v[1], v[0], v[2])
+
+
+def swap_xz(v: Vector3) -> Vector3:
+    return (v[2], v[1], v[0])
+
+
+def swap_yz(v: Vector3) -> Vector3:
+    return (v[0], v[2], v[1])
+
+
+def clear_scene() -> None:
     objects = bpy.context.scene.objects
     for object in objects:
         objects.unlink(object)
+    for data in (bpy.data.objects, bpy.data.meshes, bpy.data.lamps, bpy.data.cameras):
+        for data_id in data:
+            data.remove(data_id)
 
 
-def make_mesh(vertices, faces, name: str) -> None:
+def make_mesh(vertices: Sequence[Vector3], faces: Sequence[Tuple], name: str)\
+        -> None:
     mesh_data = bpy.data.meshes.new('')
     mesh_data.from_pydata(vertices, [], faces)
     mesh_data.update()
@@ -22,65 +48,103 @@ def make_object(mesh, name: str) -> None:
     bpy.context.scene.objects.link(obj)
 
 
-def make_triangle(a: Vector3, b: Vector3, c: Vector3, name: str) -> None:
-    vertices = [a, b, c]
-    faces = [(0,1,2)]
-    mesh_name = '{}_mesh'.format(name)
-    mesh = make_mesh(name=mesh_name, vertices=vertices, faces=faces)
-    make_object(name=name, mesh=mesh)
+def make_triangle(a: Vector3,
+                  b: Vector3,
+                  c: Vector3,
+                  transformation: Transformation3=identity,
+                  name: str='triangle') -> None:
+    vertices = [transformation(a), transformation(b), transformation(c)]
+    faces = [(0, 1, 2)]
+    name_mesh = '{}_mesh'.format(name)
+    name_object = '{}_object'.format(name)
+    mesh = make_mesh(name=name_mesh, vertices=vertices, faces=faces)
+    make_object(name=name_object, mesh=mesh)
 
 
-def make_rectangle(upper_left: Vector3, upper_right: Vector3,
-                   lower_left: Vector3, lower_right: Vector3, name: str) -> None:
-    vertices = [upper_left, upper_right,
-                lower_left, lower_right]
-    faces = [(0,2,3,1)]
-    mesh_name = '{}_mesh'.format(name)
-    mesh = make_mesh(name=mesh_name, vertices=vertices, faces=faces)
-    make_object(name=name, mesh=mesh)
+def make_rectangle(upper_left: Vector3,
+                   upper_right: Vector3,
+                   lower_left: Vector3,
+                   lower_right: Vector3,
+                   transformation: Transformation3=identity,
+                   name: str='rectangle') -> None:
+    vertices = [transformation(upper_left), transformation(upper_right),
+                transformation(lower_left), transformation(lower_right)]
+    #faces = [(0, 2, 3, 1)]
+    faces = [(0, 2, 3), (0, 3, 1)]
+    name_mesh = '{}_mesh'.format(name)
+    name_object = '{}_object'.format(name)
+    mesh = make_mesh(name=name_mesh, vertices=vertices, faces=faces)
+    make_object(name=name_object, mesh=mesh)
 
 
-def make_plane_x_pos(name, zmin, zmax, ymin, ymax, x):
-    make_rectangle(upper_right=(x, ymax, zmin), upper_left=(x, ymax, zmax),
-                   lower_right=(x, ymin, zmin), lower_left=(x, ymin, zmax), name=name)
+def make_plane_x_pos(name, zmin, zmax, ymin, ymax, x, transformation: Transformation3=identity):
+    make_rectangle(
+        upper_right=(x, ymax, zmin),
+        upper_left=(x, ymax, zmax),
+        lower_right=(x, ymin, zmin),
+        lower_left=(x, ymin, zmax),
+        transformation=transformation,
+        name=name)
 
 
-def make_plane_x_neg(name, zmin, zmax, ymin, ymax, x):
-    make_rectangle(upper_left=(x, ymax, zmin), upper_right=(x, ymax, zmax),
-                   lower_left=(x, ymin, zmin), lower_right=(x, ymin, zmax), name=name)
+def make_plane_x_neg(name, zmin, zmax, ymin, ymax, x, transformation: Transformation3=identity):
+    make_rectangle(
+        upper_left=(x, ymax, zmin),
+        upper_right=(x, ymax, zmax),
+        lower_left=(x, ymin, zmin),
+        lower_right=(x, ymin, zmax),
+        transformation=transformation,
+        name=name)
 
 
-def make_plane_y_pos(name, zmin, zmax, xmin, xmax, y):
-    make_rectangle(upper_left=(xmax, y, zmin), upper_right=(xmax, y, zmax),
-                   lower_left=(xmin, y, zmin), lower_right=(xmin, y, zmax), name=name)
+def make_plane_y_pos(name, zmin, zmax, xmin, xmax, y, transformation: Transformation3=identity):
+    make_rectangle(
+        upper_left=(xmax, y, zmin),
+        upper_right=(xmax, y, zmax),
+        lower_left=(xmin, y, zmin),
+        lower_right=(xmin, y, zmax),
+        transformation=transformation,
+        name=name)
 
 
-def make_plane_y_neg(name, zmin, zmax, xmin, xmax, y):
-    make_rectangle(upper_right=(xmax, y, zmin), upper_left=(xmax, y, zmax),
-                   lower_right=(xmin, y, zmin), lower_left=(xmin, y, zmax), name=name)
+def make_plane_y_neg(name, zmin, zmax, xmin, xmax, y, transformation: Transformation3=identity):
+    make_rectangle(
+        upper_right=(xmax, y, zmin),
+        upper_left=(xmax, y, zmax),
+        lower_right=(xmin, y, zmin),
+        lower_left=(xmin, y, zmax),
+        transformation=transformation,
+        name=name)
 
 
-def make_plane_z_pos(name, xmin, xmax, ymin, ymax, z):
-    make_rectangle(upper_left=(xmin, ymax, z), upper_right=(xmax, ymax, z),
-                   lower_left=(xmin, ymin, z), lower_right=(xmax, ymin, z), name=name)
+def make_plane_z_pos(name, xmin, xmax, ymin, ymax, z, transformation: Transformation3=identity):
+    make_rectangle(
+        upper_left=(xmin, ymax, z),
+        upper_right=(xmax, ymax, z),
+        lower_left=(xmin, ymin, z),
+        lower_right=(xmax, ymin, z),
+        transformation=transformation,
+        name=name)
 
 
-def make_plane_z_neg(name, xmin, xmax, ymin, ymax, z):
+def make_plane_z_neg(name, xmin, xmax, ymin, ymax, z, transformation: Transformation3=identity):
     make_rectangle(upper_right=(xmin, ymax, z), upper_left=(xmax, ymax, z),
                    lower_right=(xmin, ymin, z), lower_left=(xmax, ymin, z), name=name)
 
 
 def make_box(xmin: float, xmax: float,
              ymin: float, ymax: float,
-             zmin: float, zmax: float, name: str='box') -> None:
-    make_plane_x_pos(name=name, zmin=zmin, zmax=zmax, ymin=ymin, ymax=ymax, x=xmax)
-    make_plane_x_neg(name=name, zmin=zmin, zmax=zmax, ymin=ymin, ymax=ymax, x=xmin)
+             zmin: float, zmax: float,
+             transformation: Transformation3=identity,
+             name: str='box') -> None:
+    make_plane_x_pos(zmin=zmin, zmax=zmax, ymin=ymin, ymax=ymax, x=xmax, name=name)
+    make_plane_x_neg(zmin=zmin, zmax=zmax, ymin=ymin, ymax=ymax, x=xmin, name=name)
 
-    make_plane_y_pos(name=name, zmin=zmin, zmax=zmax, xmin=xmin, xmax=xmax, y=ymax)
-    make_plane_y_neg(name=name, zmin=zmin, zmax=zmax, xmin=xmin, xmax=xmax, y=ymin)
+    make_plane_y_pos(zmin=zmin, zmax=zmax, xmin=xmin, xmax=xmax, y=ymax, name=name)
+    make_plane_y_neg(zmin=zmin, zmax=zmax, xmin=xmin, xmax=xmax, y=ymin, name=name)
 
-    make_plane_z_pos(name=name, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, z=zmax)
-    make_plane_z_neg(name=name, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, z=zmin)
+    make_plane_z_pos(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, z=zmax, name=name)
+    make_plane_z_neg(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, z=zmin, name=name)
 
 
 def make_arch_y(xmin: float, xmax: float,
