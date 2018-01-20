@@ -19,6 +19,15 @@ class Identity(Transformation3):
     def does_mirror(self) -> bool:
         return False
 
+class Composed(Transformation3):
+    def __init__(self, outer: Transformation3, inner: Transformation3):
+        self.outer = outer
+        self.inner = inner
+    def transform(self, v: Vector3) -> Vector3:
+        return self.outer.transform(self.inner.transform(v))
+    def does_mirror(self) -> bool:
+        return self.outer.does_mirror() != self.inner.does_mirror()
+
 
 class SwapXY(Transformation3):
     def transform(self, v: Vector3) -> Vector3:
@@ -314,11 +323,28 @@ def make_arches_y(num_arches: int, radius: float, height_bottom: float,
             transformation=transformation)
 
 
+def make_arches_x(num_arches: int, radius: float, height_bottom: float,
+                  height_top: float, width_pillar: float,
+                  ymin: float, ymax: float, zmin: float,
+                  transformation: Optional[Transformation3] = None) -> None:
+    new_transformation = Composed(transformation, SwapXY()) if transformation \
+        else SwapXY()
+
+    make_arches_y(
+        num_arches=num_arches,
+        radius=radius,
+        height_bottom=height_bottom,
+        height_top=height_top,
+        width_pillar=width_pillar,
+        xmin=ymin,
+        xmax=ymax,
+        zmin=zmin,
+        transformation=new_transformation)
+
+
 def main() -> None:
     clear_scene()
-    make_arches_y(num_arches=1, radius=1, height_bottom=3, height_top=1,
-        width_pillar=1, xmin=0, xmax=1, zmin=0,
-        transformation=None)
-    make_arches_y(num_arches=1, radius=1, height_bottom=3, height_top=1,
-        width_pillar=1, xmin=0, xmax=1, zmin=4,
-        transformation=SwapXY())
+    make_arches_y(num_arches=1, radius=1, height_bottom=2, height_top=1,
+        width_pillar=1, xmin=0, xmax=1, zmin=0)
+    make_arches_x(num_arches=1, radius=1, height_bottom=2, height_top=1,
+        width_pillar=1, ymin=0, ymax=1, zmin=0)
