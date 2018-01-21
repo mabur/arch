@@ -246,45 +246,61 @@ def make_arch_y(xmin: float, xmax: float,
     vertices_front_right.append(corner_front_right)
 
     for step in range(STEPS - 1):
-        make_triangle(a=vertices_front_left[step],
-                      b=vertices_front_left[step + 1],
-                      c=vertices_back_left[step],
-                      transformation=transformation)
+        make_mesh_object(
+            vertices=[vertices_front_left[step],
+                      vertices_front_left[step + 1],
+                      vertices_back_left[step]],
+            triangles=[(0, 1, 2)],
+            transformation=transformation)
 
-        make_triangle(a=vertices_back_left[step],
-                      b=vertices_front_left[step + 1],
-                      c=vertices_back_left[step + 1],
-                      transformation=transformation)
+        make_mesh_object(
+            vertices=[vertices_back_left[step],
+                      vertices_front_left[step + 1],
+                      vertices_back_left[step + 1]],
+            triangles=[(0, 1, 2)],
+            transformation=transformation)
 
-        make_triangle(a=vertices_front_right[step],
-                      b=vertices_back_right[step],
-                      c=vertices_front_right[step + 1],
-                      transformation=transformation)
+        make_mesh_object(
+            vertices=[vertices_front_right[step],
+                      vertices_back_right[step],
+                      vertices_front_right[step + 1]],
+            triangles=[(0, 1, 2)],
+            transformation=transformation)
 
-        make_triangle(a=vertices_back_right[step],
-                      b=vertices_back_right[step + 1],
-                      c=vertices_front_right[step + 1],
-                      transformation=transformation)
+        make_mesh_object(
+            vertices=[vertices_back_right[step],
+                      vertices_back_right[step + 1],
+                      vertices_front_right[step + 1]],
+            triangles=[(0, 1, 2)],
+            transformation=transformation)
 
-        make_triangle(a=vertices_back_left[-1],
-                      b=vertices_back_left[step],
-                      c=vertices_back_left[step + 1],
-                      transformation=transformation)
+        make_mesh_object(
+            vertices=[vertices_back_left[-1],
+                      vertices_back_left[step],
+                      vertices_back_left[step + 1]],
+            triangles=[(0, 1, 2)],
+            transformation=transformation)
 
-        make_triangle(a=vertices_front_left[-1],
-                      b=vertices_front_left[step + 1],
-                      c=vertices_front_left[step],
-                      transformation=transformation)
+        make_mesh_object(
+            vertices=[vertices_front_left[-1],
+                      vertices_front_left[step + 1],
+                      vertices_front_left[step]],
+            triangles=[(0, 1, 2)],
+            transformation=transformation)
 
-        make_triangle(a=vertices_back_right[-1],
-                      b=vertices_back_right[step + 1],
-                      c=vertices_back_right[step],
-                      transformation=transformation)
+        make_mesh_object(
+            vertices=[vertices_back_right[-1],
+                      vertices_back_right[step + 1],
+                      vertices_back_right[step]],
+            triangles=[(0, 1, 2)],
+            transformation=transformation)
 
-        make_triangle(a=vertices_front_right[-1],
-                      b=vertices_front_right[step],
-                      c=vertices_front_right[step + 1],
-                      transformation=transformation)
+        make_mesh_object(
+            vertices=[vertices_front_right[-1],
+                      vertices_front_right[step],
+                      vertices_front_right[step + 1]],
+            triangles=[(0, 1, 2)],
+            transformation=transformation)
 
 
 def make_arches_y(num_arches: int, radius: float, height_bottom: float,
