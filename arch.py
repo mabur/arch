@@ -245,11 +245,6 @@ def make_arch_y(xmin: float, xmax: float,
     vertices_front_left.append(corner_front_left)
     vertices_front_right.append(corner_front_right)
 
-    triangles_front_left = []
-    triangles_front_right = []
-    triangles_back_left = []
-    triangles_back_right = []
-
     for step in range(STEPS - 1):
         make_mesh_object(
             vertices=[vertices_front_left[step],
@@ -279,10 +274,10 @@ def make_arch_y(xmin: float, xmax: float,
             triangles=[(0, 1, 2)],
             transformation=transformation)
 
-        triangles_back_left.append((STEPS + 1 - 1, step, step + 1))
-        triangles_front_left.append((STEPS + 1 - 1, step + 1, step))
-        triangles_back_right.append((STEPS + 1 - 1, step + 1, step))
-        triangles_front_right.append((STEPS + 1 - 1, step, step + 1))
+    triangles_back_left = [(STEPS + 1 - 1, s, s + 1) for s in range(STEPS - 1)]
+    triangles_front_left = [(STEPS + 1 - 1, s + 1, s) for s in range(STEPS - 1)]
+    triangles_back_right = [(STEPS + 1 - 1, s + 1, s) for s in range(STEPS - 1)]
+    triangles_front_right = [(STEPS + 1 - 1, s, s + 1) for s in range(STEPS - 1)]
 
     make_mesh_object(vertices=vertices_back_left,
                      triangles=triangles_back_left,
