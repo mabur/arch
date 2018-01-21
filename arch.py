@@ -94,9 +94,10 @@ def make_triangle(a: Vector3,
                   c: Vector3,
                   transformation: Optional[Transformation3]=None,
                   name: str='triangle') -> None:
-    vertices = [a, b, c]
-    faces = [(0, 1, 2)]
-    make_mesh_object(vertices=vertices, triangles=faces, transformation=transformation)
+    make_mesh_object(
+        vertices=[a, b, c],
+        triangles=[(0, 1, 2)],
+        transformation=transformation)
 
 
 def make_rectangle(upper_left: Vector3,
@@ -105,9 +106,10 @@ def make_rectangle(upper_left: Vector3,
                    lower_right: Vector3,
                    transformation: Optional[Transformation3] = None,
                    name: str='rectangle') -> None:
-    vertices = [upper_left, upper_right, lower_left, lower_right]
-    faces = [(0, 2, 3), (0, 3, 1)]
-    make_mesh_object(vertices=vertices, triangles=faces, transformation=transformation)
+    make_mesh_object(
+        vertices=[upper_left, upper_right, lower_left, lower_right],
+        triangles=[(0, 2, 3), (0, 3, 1)],
+        transformation=transformation)
 
 
 def make_plane_x_pos(name, zmin, zmax, ymin, ymax, x,
