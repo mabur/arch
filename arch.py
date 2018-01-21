@@ -344,7 +344,13 @@ def make_arches_x(num_arches: int, radius: float, height_bottom: float,
 
 def main() -> None:
     clear_scene()
-    make_arches_y(num_arches=1, radius=1, height_bottom=2, height_top=1,
-        width_pillar=1, xmin=0, xmax=1, zmin=0)
-    make_arches_x(num_arches=1, radius=1, height_bottom=2, height_top=1,
-        width_pillar=1, ymin=0, ymax=1, zmin=0)
+    for floor in range(1):
+        height = 4
+        make_arches_x(num_arches=3, radius=1, height_bottom=2, height_top=1,
+            width_pillar=1, ymin=0, ymax=1, zmin=floor * height)
+        make_arches_x(num_arches=3, radius=1, height_bottom=2, height_top=1,
+            width_pillar=1, ymin=9, ymax=10, zmin=floor * height)
+        make_arches_y(num_arches=3, radius=1, height_bottom=2, height_top=1,
+            width_pillar=1, xmin=0, xmax=1, zmin=floor * height)
+        make_arches_y(num_arches=3, radius=1, height_bottom=2, height_top=1,
+            width_pillar=1, xmin=9, xmax=10, zmin=floor * height)
