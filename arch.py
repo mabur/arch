@@ -245,39 +245,32 @@ def make_arch_y(xmin: float, xmax: float,
     vertices_front_left.append(corner_front_left)
     vertices_front_right.append(corner_front_right)
 
-    for step in range(STEPS - 1):
-        make_mesh_object(
-            vertices=[vertices_front_left[step],
-                      vertices_front_left[step + 1],
-                      vertices_back_left[step]],
-            triangles=[(0, 1, 2)],
-            transformation=transformation)
+    vertices_left = vertices_back_left + vertices_front_left
+    vertices_right = vertices_back_right + vertices_front_right
+    
+    BACK = 0
+    FRONT = STEPS + 1
 
-        make_mesh_object(
-            vertices=[vertices_back_left[step],
-                      vertices_front_left[step + 1],
-                      vertices_back_left[step + 1]],
-            triangles=[(0, 1, 2)],
-            transformation=transformation)
+    triangles_left0 = [(FRONT + s, FRONT + s + 1, BACK + s) for s in range(STEPS - 1)]
+    triangles_left1 = [(BACK + s, FRONT + s + 1, BACK + s + 1) for s in range(STEPS - 1)]
+    triangles_right0 = [(FRONT + s, BACK + s, FRONT + s + 1) for s in range(STEPS - 1)]
+    triangles_right1 = [(BACK + s, BACK + s + 1, FRONT + s + 1) for s in range(STEPS - 1)]
 
-        make_mesh_object(
-            vertices=[vertices_front_right[step],
-                      vertices_back_right[step],
-                      vertices_front_right[step + 1]],
-            triangles=[(0, 1, 2)],
-            transformation=transformation)
+    triangles_back_left = [(STEPS, s, s + 1) for s in range(STEPS - 1)]
+    triangles_front_left = [(STEPS, s + 1, s) for s in range(STEPS - 1)]
+    triangles_back_right = [(STEPS, s + 1, s) for s in range(STEPS - 1)]
+    triangles_front_right = [(STEPS, s, s + 1) for s in range(STEPS - 1)]
 
-        make_mesh_object(
-            vertices=[vertices_back_right[step],
-                      vertices_back_right[step + 1],
-                      vertices_front_right[step + 1]],
-            triangles=[(0, 1, 2)],
-            transformation=transformation)
+    triangles_left = triangles_left0 + triangles_left1
+    triangles_right = triangles_right0 + triangles_right1
 
-    triangles_back_left = [(STEPS + 1 - 1, s, s + 1) for s in range(STEPS - 1)]
-    triangles_front_left = [(STEPS + 1 - 1, s + 1, s) for s in range(STEPS - 1)]
-    triangles_back_right = [(STEPS + 1 - 1, s + 1, s) for s in range(STEPS - 1)]
-    triangles_front_right = [(STEPS + 1 - 1, s, s + 1) for s in range(STEPS - 1)]
+    make_mesh_object(vertices=vertices_left,
+                     triangles=triangles_left,
+                     transformation=transformation)
+
+    make_mesh_object(vertices=vertices_right,
+                     triangles=triangles_right,
+                     transformation=transformation)
 
     make_mesh_object(vertices=vertices_back_left,
                      triangles=triangles_back_left,
