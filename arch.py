@@ -245,13 +245,13 @@ def make_arch_y(xmin: float, xmax: float,
 
     for step in range(STEPS - 1):
         make_triangle(a=vertices_front_left[step],
-                      c=vertices_back_left[step],
                       b=vertices_front_left[step + 1],
+                      c=vertices_back_left[step],
                       transformation=transformation)
 
         make_triangle(a=vertices_back_left[step],
-                      c=vertices_back_left[step + 1],
                       b=vertices_front_left[step + 1],
+                      c=vertices_back_left[step + 1],
                       transformation=transformation)
 
         make_triangle(a=vertices_front_right[step],
@@ -270,13 +270,13 @@ def make_arch_y(xmin: float, xmax: float,
                       transformation=transformation)
 
         make_triangle(a=vertices_front_left[-1],
-                      c=vertices_front_left[step],
                       b=vertices_front_left[step + 1],
+                      c=vertices_front_left[step],
                       transformation=transformation)
 
         make_triangle(a=vertices_back_right[-1],
-                      c=vertices_back_right[step],
                       b=vertices_back_right[step + 1],
+                      c=vertices_back_right[step],
                       transformation=transformation)
 
         make_triangle(a=vertices_front_right[-1],
